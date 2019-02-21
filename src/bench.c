@@ -114,8 +114,19 @@ unsigned short semilla; /* Seed used to generate the state vectors. */
 extern char **environ;  /* Pointer to Environment variableses.      */
 FILE *med;              /* Pontert to the test results output file. */
 struct timeb sellohora1, sellohora2; /* Auxiliar timestamps.        */
+char *host_port;
 /********************************************************************/
 
+void connect_db(char *db) {
+	EXEC SQL BEGIN DECLARE SECTION;
+	char target[128];
+	EXEC SQL END DECLARE SECTION;
+	target[0] = 0;
+	strcat(target, db);
+	strcat(target, "@");
+	strcat(target, host_port);
+	EXEC SQL CONNECT TO :target USER USERNAME;
+}
 
 int lanzador(int w, int term){
 /* ---------------------------------------------- *\
@@ -593,7 +604,7 @@ EXEC SQL BEGIN DECLARE SECTION;
 EXEC SQL END DECLARE SECTION;
 
 /* Conecting with the database */
-EXEC SQL CONNECT TO tpcc USER USERNAME;
+connect_db("tpcc");
 
 EXEC SQL SET autocommit = ON;
 
@@ -857,7 +868,7 @@ EXEC SQL BEGIN DECLARE SECTION;
 EXEC SQL END DECLARE SECTION;
 
 /* Conecting to database   */
-EXEC SQL CONNECT TO tpcc USER USERNAME;
+connect_db("tpcc");
 
 /* Obtainint the number of warehouses */
 EXEC SQL SELECT count(*) INTO :w FROM warehouse;
@@ -2037,7 +2048,7 @@ FILE *fcons;                    /*  Pointer to constants file */
 
 /************* Conecting to template1 **************/
 /* This database is created by default by postgreSQL */
-EXEC SQL CONNECT TO template1 USER USERNAME;
+connect_db("template1");
 if (sqlca.sqlcode<0){
 
 	fprintf(stderr, "ERROR CONNECTING TO template1\n");
@@ -2060,7 +2071,7 @@ if (sqlca.sqlcode<0){
 EXEC SQL DISCONNECT;
 
 /************* CONNECTING to tpcc ***************/
-EXEC SQL CONNECT TO tpcc USER USERNAME;
+connect_db("tpcc");
 
 /**************ERROR HANDLING********/
 if (sqlca.sqlcode<0){
@@ -3963,7 +3974,7 @@ EXEC SQL BEGIN DECLARE SECTION;
 EXEC SQL END DECLARE SECTION;
 
 /* Connecting with database */
-EXEC SQL CONNECT TO tpcc USER USERNAME;
+connect_db("tpcc");
 
 /* Checking warehouse table */
 fprintf(stdout, "\tWarehouse table... ");
@@ -4152,7 +4163,7 @@ EXEC SQL BEGIN DECLARE SECTION;
 EXEC SQL END DECLARE SECTION;
 
 /* Connecting with tpcc */
-EXEC SQL CONNECT TO tpcc USER USERNAME;
+connect_db("tpcc");
 
 fprintf(stdout,"\n\n\n\n\n\n\n		CARDINALITY OF TABLES:\n\n\n");
 EXEC SQL SELECT count(*) INTO :n_fil FROM warehouse;
@@ -4231,8 +4242,13 @@ void signal_term();
 void signal_term_exit();
 void signal_alarm();
 
-/*  Connecting with template1 */ 
-	EXEC SQL CONNECT TO template1 USER USERNAME;
+/*  Connecting with template1 */
+	host_port = getenv("HOST_PORT");
+	if (!host_port) {
+		printf("\"HOST_PORT\" environment variable is not set\n");
+		return 1;
+	}
+	connect_db("template1");
 	if (sqlca.sqlcode<0){
 		printf("Error number: %ld\n", sqlca.sqlcode);
 		printf("	%s\n", sqlca.sqlerrm.sqlerrmc);
@@ -4708,7 +4724,7 @@ strcat(filenameBuffer,"medida.log");
 			}
 
 			/* Connecting with template1 */
-			EXEC SQL CONNECT TO template1 USER USERNAME;
+			connect_db("template1");
 			EXEC SQL SET autocommit = ON; 
 
 			/* Delete database */
