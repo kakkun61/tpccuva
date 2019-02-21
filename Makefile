@@ -14,7 +14,7 @@ VARDIR = $(HOME)/tpcc-uva/var/tpcc/
 EXECDIR = $(HOME)/tpcc-uva/bin/
 
 # INCLUDEPATH stores the location of PostgreSQL include files.
-export INCLUDEPATH = $(HOME)/tpcc-uva/pgsql/include:/usr/include/postgresql
+export INCLUDEPATH = -I $(HOME)/tpcc-uva/pgsql/include -I /usr/include/postgresql
 
 # LIBSPATH stores the location of PostgreSQL library files.
 export LIBSPATH = $(HOME)/tpcc-uva/pgsql/lib/
